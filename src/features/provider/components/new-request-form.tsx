@@ -1,0 +1,15 @@
+"use client";
+
+import { useState } from "react";
+import { calculateRequestQuote, type SessionDuration } from "@/lib/pricing/request-pricing";
+
+const durations: Array<{ label: string; value: SessionDuration }> = [{ label: "30 min", value: 30 }, { label: "60 min", value: 60 }, { label: "120 min", value: 120 }];
+
+export function NewRequestForm({ availableCreditUsd }: { availableCreditUsd: number }) {
+  const [durationMinutes, setDurationMinutes] = useState<SessionDuration>(60);
+  const [participants, setParticipants] = useState(5);
+  const [applyCredit, setApplyCredit] = useState(true);
+  const [notice, setNotice] = useState("");
+  const quote = calculateRequestQuote({ durationMinutes, participants, availableCreditUsd, applyCredit });
+  return <aside id="request" className="surface h-fit"><div className="border-b border-[#e3e7e1] px-5 py-5"><p className="eyebrow">PLANIFICACION</p><h2 className="font-display mt-1 text-2xl font-bold">Nueva solicitud</h2><p className="mt-2 text-sm text-[#697570]">Selecciona las condiciones de acompañamiento para tu próximo vivo.</p></div><form className="space-y-5 p-5" onSubmit={(event) => { event.preventDefault(); setNotice("Solicitud guardada como borrador. Se habilitará al confirmarse el pago."); }}><label className="field-label">Plataforma<select defaultValue="TikTok"><option>TikTok</option><option>Instagram</option></select></label><div className="grid grid-cols-2 gap-3"><label className="field-label">Fecha<input type="date" defaultValue="2026-09-03" /></label><label className="field-label">Hora<input type="time" defaultValue="20:00" /></label></div><div className="field-label">Duración<div className="segment-control">{durations.map(({ label, value }) => <button aria-label={`Duración ${label}`} type="button" key={value} onClick={() => setDurationMinutes(value)} className={durationMinutes === value ? "selected" : ""}>{label}</button>)}</div></div><label className="field-label">Participantes <span className="value-tag">{participants}</span><input className="range" type="range" min="3" max="10" value={participants} onChange={(event) => setParticipants(Number(event.target.value))} /><span className="range-label"><span>3</span><span>10</span></span></label><label className="credit-toggle"><input type="checkbox" checked={applyCredit} onChange={(event) => setApplyCredit(event.target.checked)} /><span><b>Aplicar crédito disponible</b><small>Se descontarán hasta USD {availableCreditUsd.toFixed(2)}</small></span><strong>- USD {quote.creditAppliedUsd.toFixed(2)}</strong></label><div className="price-box"><span>Estimación de solicitud</span><div><strong>USD {quote.totalUsd.toFixed(2)}</strong><span>antes de impuestos</span></div></div><button type="submit" className="command-button w-full justify-center">Continuar al pago</button>{notice && <p className="rounded-md bg-[#e8f2dc] p-3 text-sm text-[#355a2c]">{notice}</p>}</form></aside>;
+}
